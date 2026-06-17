@@ -1,0 +1,244 @@
+generator client {
+  provider = "prisma-client-js"
+  engineType = "binary"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  PAYSTACK
+  MPESA
+  CARD
+}
+
+enum Currency {
+  KES
+  USD
+}
+
+enum ShippingRegion {
+  KENYA
+  EAST_AFRICA
+  INTERNATIONAL
+}
+
+model User {
+  id            String    @id @default(uuid())
+  name          String
+  email         String    @unique
+  password      String?
+  emailVerified DateTime?
+  image         String?
+  role          Role      @default(CUSTOMER)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  accounts Account[]
+  sessions Session[]
+  orders   Order[]
+  addresses Address[]
+  reviews  Review[]
+  cart     Cart?
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Category {
+  id        String    @id @default(uuid())
+  name      String
+  slug      String    @unique
+  imageUrl  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  products  Product[]
+}
+
+model Product {
+  id          String        @id @default(uuid())
+  name        String
+  slug        String        @unique
+  description String
+  price       Decimal
+  compareAt   Decimal?
+  images      String
+  featured    Boolean       @default(false)
+  isNew       Boolean       @default(false)
+  isBestSeller Boolean      @default(false)
+  categoryId  String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  category   Category      @relation(fields: [categoryId], references: [id])
+  sizes      ProductSize[]
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+  reviews    Review[]
+}
+
+model ProductSize {
+  id        String  @id @default(uuid())
+  productId String
+  size      String
+  stock     Int
+
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, size])
+}
+
+model Cart {
+  id        String     @id @default(uuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+}
+
+model CartItem {
+  id        String @id @default(uuid())
+  cartId    String
+  productId String
+  size      String
+  quantity  Int
+
+  cart    Cart    @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, productId, size])
+}
+
+model Order {
+  id              String         @id @default(uuid())
+  orderNumber     String         @unique
+  userId          String
+  total           Decimal
+  subtotal        Decimal
+  shippingCost    Decimal        @default(0)
+  tax             Decimal        @default(0)
+  status          OrderStatus    @default(PENDING)
+  paymentMethod   PaymentMethod?
+  paymentRef      String?
+  paymentStatus   String         @default("pending")
+  currency        Currency       @default(KES)
+  deliveryAddress String
+  billingAddress  String?
+  shippingRegion  ShippingRegion @default(KENYA)
+  trackingNumber  String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  user  User        @relation(fields: [userId], references: [id])
+  items OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  productId String
+  size      String
+  quantity  Int
+  price     Decimal
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  label     String   @default("Home")
+  fullName  String
+  phone     String
+  address   String
+  city      String
+  county    String?
+  country   String   @default("Kenya")
+  postalCode String?
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  rating    Int
+  comment   String?
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+}
+
+model StoreSettings {
+  id              String  @id @default(uuid())
+  storeName       String  @default("JEANS GARAGE")
+  email           String  @default("info@jeansgarage.co.ke")
+  phone           String  @default("+254 700 000 000")
+  whatsapp        String  @default("+254 700 000 000")
+  address         String  @default("Nairobi, Kenya")
+  instagram       String?
+  facebook        String?
+  twitter         String?
+  tiktok          String?
+  taxRate         Decimal @default(16)
+  kenyaShipping   Decimal @default(500)
+  eastAfricaShipping Decimal @default(1500)
+  intlShipping    Decimal @default(3500)
+  currency        Currency @default(KES)
+}
