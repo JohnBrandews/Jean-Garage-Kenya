@@ -28,7 +28,7 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-black/5 bg-[rgba(247,244,239,0.92)] backdrop-blur-xl">
       <div className="container-luxury">
         <div className="flex h-20 items-center gap-3 sm:gap-6">
-          <Link href="/" className="flex shrink-0 items-center gap-3">
+          <Link href="/" className="flex shrink-0 items-center gap-2 sm:gap-3">
             <Image
               src="/jean.png"
               alt="JEANS GARAGE logo"
@@ -37,7 +37,7 @@ export function Header() {
               className="h-11 w-11 rounded-full bg-white object-contain p-1 shadow-[0_10px_24px_rgba(0,0,0,0.12)] ring-2 ring-[#d7c08e]/35 sm:h-14 sm:w-14 sm:p-1.5"
               priority
             />
-            <span className="hidden font-display text-2xl font-bold tracking-[0.12em] text-[#1d1816] [text-shadow:0_1px_0_rgba(255,255,255,0.85)] sm:inline-block md:text-[2.1rem]">
+            <span className="font-display text-[0.78rem] font-bold tracking-[0.2em] text-[#1d1816] [text-shadow:0_1px_0_rgba(255,255,255,0.85)] sm:text-xl sm:tracking-[0.12em] md:text-[2.1rem]">
               JEANS GARAGE
             </span>
           </Link>
@@ -144,22 +144,44 @@ export function Header() {
           <Link href="/track-order" className="nav-link text-charcoal" onClick={() => setMobileOpen(false)}>
             Track Order
           </Link>
-          <div className="mt-2 grid grid-cols-2 gap-3">
-            <Link
-              href="/login"
-              className="inline-flex items-center justify-center border border-charcoal/15 px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-charcoal"
-              onClick={() => setMobileOpen(false)}
-            >
-              Sign In
-            </Link>
-            <Link
-              href="/register"
-              className="inline-flex items-center justify-center bg-gold px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white"
-              onClick={() => setMobileOpen(false)}
-            >
-              Register
-            </Link>
-          </div>
+          {!session?.user ? (
+            <div className="mt-2 grid grid-cols-2 gap-3">
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center border border-charcoal/15 px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-charcoal"
+                onClick={() => setMobileOpen(false)}
+              >
+                Sign In
+              </Link>
+              <Link
+                href="/register"
+                className="inline-flex items-center justify-center bg-gold px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white"
+                onClick={() => setMobileOpen(false)}
+              >
+                Register
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-2 grid grid-cols-2 gap-3">
+              <Link
+                href={dashboardHref}
+                className="inline-flex items-center justify-center border border-charcoal/15 px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-charcoal"
+                onClick={() => setMobileOpen(false)}
+              >
+                Dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={() => {
+                  setMobileOpen(false);
+                  signOut({ callbackUrl: "/" });
+                }}
+                className="inline-flex items-center justify-center bg-gold px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white"
+              >
+                Sign Out
+              </button>
+            </div>
+          )}
         </nav>
       </div>
     </header>
