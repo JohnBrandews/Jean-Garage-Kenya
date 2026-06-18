@@ -7,7 +7,8 @@ import { prisma } from "./prisma";
 import { loginSchema } from "./validations";
 import type { Role } from "@prisma/client";
 
-const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+const authSecret = process.env.NEXTAUTH_SECRET ?? process.env.AUTH_SECRET;
+const authDebug = process.env.AUTH_DEBUG === "true";
 
 if (!authSecret) {
   throw new Error("AUTH_SECRET is required");
@@ -79,11 +80,30 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
         token.id = user.id;
         token.role = user.role ?? "CUSTOMER";
       }
+
+      if (token.id && !token.role) {
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true },
+        });
+
+        token.role = dbUser?.role ?? "CUSTOMER";
+      }
+
+      if (authDebug) {
+        console.log("[auth][jwt]", {
+          tokenId: token.id,
+          role: token.role,
+          provider: account?.provider,
+          hasUser: Boolean(user),
+        });
+      }
+
       return token;
     },
     async session({ session, token }) {
@@ -91,6 +111,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         session.user.id = token.id as string;
         session.user.role = (token.role as Role) ?? "CUSTOMER";
       }
+
+      if (authDebug) {
+        console.log("[auth][session]", {
+          userId: session.user?.id,
+          email: session.user?.email,
+          role: session.user?.role,
+        });
+      }
+
       return session;
     },
   },

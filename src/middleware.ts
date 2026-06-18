@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+const authDebug = process.env.AUTH_DEBUG === "true";
+
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  
+
   const token = await getToken({ 
     req, 
     secret: process.env.NEXTAUTH_SECRET,
@@ -14,6 +16,16 @@ export async function middleware(req: NextRequest) {
 
   const isLoggedIn = Boolean(token);
   const isAdmin = token?.role === "ADMIN";
+
+  if (authDebug) {
+    console.log("[auth][middleware]", {
+      path: pathname,
+      isLoggedIn,
+      isAdmin,
+      role: token?.role ?? null,
+      userId: token?.id ?? null,
+    });
+  }
 
   if (pathname.startsWith("/admin") && (!isLoggedIn || !isAdmin)) {
     return NextResponse.redirect(
