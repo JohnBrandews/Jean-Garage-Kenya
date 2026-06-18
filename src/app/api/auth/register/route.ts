@@ -12,8 +12,9 @@ export async function POST(req: NextRequest) {
       return apiError(parsed.error.issues[0]?.message || "Invalid registration data", 400);
     }
 
-    const existing = await prisma.user.findUnique({
-      where: { email: parsed.data.email },
+    const email = parsed.data.email.trim().toLowerCase();
+    const existing = await prisma.user.findFirst({
+      where: { email: { equals: email, mode: "insensitive" } },
     });
     if (existing) return apiError("Email already registered", 409);
 
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
     const user = await prisma.user.create({
       data: {
         name: parsed.data.name,
-        email: parsed.data.email,
+        email,
         password: hashedPassword,
       },
     });

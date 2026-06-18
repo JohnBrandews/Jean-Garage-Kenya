@@ -30,7 +30,7 @@ export default function RegisterPage() {
       if (!res.ok) throw new Error(result.error);
 
       await signIn("credentials", {
-        email: data.email,
+        email: data.email.trim().toLowerCase(),
         password: data.password,
         redirect: false,
       });

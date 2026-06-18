@@ -27,7 +27,7 @@ export function LoginForm() {
   const onSubmit = async (data: LoginInput) => {
     setError("");
     const result = await signIn("credentials", {
-      email: data.email,
+      email: data.email.trim().toLowerCase(),
       password: data.password,
       redirect: false,
     });
