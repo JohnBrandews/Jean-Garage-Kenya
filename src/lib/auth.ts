@@ -7,6 +7,12 @@ import { prisma } from "./prisma";
 import { loginSchema } from "./validations";
 import type { Role } from "@prisma/client";
 
+const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+
+if (!authSecret) {
+  throw new Error("AUTH_SECRET is required");
+}
+
 declare module "next-auth" {
   interface User {
     role?: Role;
@@ -30,6 +36,8 @@ declare module "@auth/core/jwt" {
 }
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
+  secret: authSecret,
+  trustHost: true,
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   pages: {

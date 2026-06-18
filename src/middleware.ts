@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
+const authSecret = process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET;
+
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-  const token = await getToken({ req, secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET });
+  const token = await getToken({ req, secret: authSecret });
   const isLoggedIn = Boolean(token);
   const isAdmin = token?.role === "ADMIN";
 
