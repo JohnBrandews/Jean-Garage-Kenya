@@ -1,31 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
-const authDebug = process.env.AUTH_DEBUG === "true";
-
 export async function middleware(req: NextRequest) {
   const { pathname, search } = req.nextUrl;
-
+  
   const token = await getToken({ 
     req, 
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.AUTH_SECRET ?? process.env.NEXTAUTH_SECRET,
     cookieName: process.env.NODE_ENV === "production" 
-      ? "__Secure-next-auth.session-token" 
-      : "next-auth.session-token"
+      ? "__Secure-authjs.session-token"
+      : "authjs.session-token"
   });
 
   const isLoggedIn = Boolean(token);
   const isAdmin = token?.role === "ADMIN";
-
-  if (authDebug) {
-    console.log("[auth][middleware]", {
-      path: pathname,
-      isLoggedIn,
-      isAdmin,
-      role: token?.role ?? null,
-      userId: token?.id ?? null,
-    });
-  }
 
   if (pathname.startsWith("/admin") && (!isLoggedIn || !isAdmin)) {
     return NextResponse.redirect(
