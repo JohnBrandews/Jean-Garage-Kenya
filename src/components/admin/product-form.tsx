@@ -29,11 +29,12 @@ type Product = {
 interface ProductFormProps {
   categories: Category[];
   product?: Product;
+  initialCategoryId?: string;
 }
 
 const defaultSizes = ["30", "32", "34", "36"];
 
-export function ProductForm({ categories, product }: ProductFormProps) {
+export function ProductForm({ categories, product, initialCategoryId }: ProductFormProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -174,7 +175,7 @@ export function ProductForm({ categories, product }: ProductFormProps) {
           </label>
           <select
             name="categoryId"
-            defaultValue={product?.categoryId || categories[0]?.id}
+            defaultValue={product?.categoryId || initialCategoryId || categories[0]?.id}
             className="input-underline font-body text-base"
             required
           >

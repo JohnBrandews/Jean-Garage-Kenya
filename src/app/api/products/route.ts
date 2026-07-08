@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess, requireAdmin } from "@/lib/api-utils";
 import { slugify } from "@/lib/utils";
@@ -50,6 +51,11 @@ export async function POST(req: NextRequest) {
       },
       include: { sizes: true, category: true },
     });
+
+    revalidatePath("/products");
+    revalidatePath("/");
+    revalidatePath("/admin/products");
+    revalidatePath("/admin/categories");
 
     return apiSuccess(product, 201);
   } catch (error) {

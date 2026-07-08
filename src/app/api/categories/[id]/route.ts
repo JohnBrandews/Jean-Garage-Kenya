@@ -9,34 +9,27 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     await requireAdmin();
     const { id } = await params;
     const body = await req.json();
+    const name = String(body.name || "").trim();
 
-    const product = await prisma.product.update({
+    if (!name) {
+      return apiError("Category name is required", 400);
+    }
+
+    const category = await prisma.category.update({
       where: { id },
       data: {
-        name: body.name,
-        slug: slugify(body.name),
-        description: body.description,
-        price: body.price,
-        compareAt: body.compareAt,
-        images: JSON.stringify(body.images),
-        featured: body.featured ?? false,
-        isNew: body.isNew ?? false,
-        isBestSeller: body.isBestSeller ?? false,
-        categoryId: body.categoryId,
-        sizes: {
-          deleteMany: {},
-          create: body.sizes,
-        },
+        name,
+        slug: slugify(name),
+        imageUrl: body.imageUrl || null,
       },
-      include: { sizes: true, category: true },
     });
 
+    revalidatePath("/admin/categories");
+    revalidatePath(`/admin/categories/${id}`);
     revalidatePath("/products");
     revalidatePath("/");
-    revalidatePath("/admin/products");
-    revalidatePath("/admin/categories");
 
-    return apiSuccess(product);
+    return apiSuccess(category);
   } catch (error) {
     if (error instanceof Error && error.message === "Unauthorized") {
       return apiError("Unauthorized", 401);
@@ -44,6 +37,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (error instanceof Error && error.message === "Forbidden") {
       return apiError("Forbidden", 403);
     }
-    return apiError("Failed to update product", 500);
+    return apiError("Failed to update category", 500);
   }
 }

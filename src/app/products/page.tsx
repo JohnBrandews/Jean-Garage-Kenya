@@ -5,6 +5,9 @@ import { ProductCard } from "@/components/products/product-card";
 import { parseImages } from "@/lib/utils";
 import { ProductsFilter } from "@/components/products/products-filter";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface ProductsPageProps {
   searchParams: Promise<{
     category?: string;

@@ -6,6 +6,8 @@ import { Plus, Pencil } from "lucide-react";
 import Image from "next/image";
 
 export const metadata = { title: "Manage Products" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminProductsPage() {
   const products = await prisma.product.findMany({

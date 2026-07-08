@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 
 export const metadata = { title: "Manage Categories" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminCategoriesPage() {
   const categories = await prisma.category.findMany({
@@ -31,15 +33,20 @@ export default async function AdminCategoriesPage() {
               {cat.imageUrl && (
                 <Image src={cat.imageUrl} alt={cat.name} fill className="object-cover" />
               )}
+              </div>
+              <div className="p-4">
+                <h3 className="font-display text-lg font-bold">{cat.name}</h3>
+                <p className="text-sm text-gray-500">{cat._count.products} products</p>
+                <div className="mt-3 flex items-center gap-4">
+                  <Link href={`/admin/categories/${cat.id}`} className="text-sm text-gold hover:underline">
+                    View / Edit
+                  </Link>
+                  <Link href={`/admin/products/new?categoryId=${cat.id}`} className="text-sm text-gold hover:underline">
+                    Add Product
+                  </Link>
+                </div>
+              </div>
             </div>
-            <div className="p-4">
-              <h3 className="font-display text-lg font-bold">{cat.name}</h3>
-              <p className="text-sm text-gray-500">{cat._count.products} products</p>
-              <Link href={`/admin/categories/${cat.id}`} className="mt-2 inline-block text-sm text-gold hover:underline">
-                Edit
-              </Link>
-            </div>
-          </div>
         ))}
       </div>
     </div>
