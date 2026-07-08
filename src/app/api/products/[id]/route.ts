@@ -10,24 +10,48 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const { id } = await params;
     const body = await req.json();
 
+    // Fetch current product so we only change slug when name actually changes
+    const currentProduct = await prisma.product.findUnique({ where: { id } });
+    if (!currentProduct) return apiError("Product not found", 404);
+
+    const updateData: any = {
+      name: body.name,
+      description: body.description,
+      price: body.price,
+      compareAt: body.compareAt,
+      images: JSON.stringify(body.images),
+      featured: body.featured ?? false,
+      isNew: body.isNew ?? false,
+      isBestSeller: body.isBestSeller ?? false,
+      categoryId: body.categoryId,
+      sizes: {
+        deleteMany: {},
+        create: body.sizes,
+      },
+    };
+
+    // Only regenerate slug if the name actually changed
+    if (body.name && body.name !== currentProduct.name) {
+      let newSlug = slugify(body.name);
+
+      // Ensure slug is unique excluding the current product
+      const existing = await prisma.product.findFirst({
+        where: {
+          slug: newSlug,
+          NOT: { id },
+        },
+      });
+
+      if (existing) {
+        newSlug = `${newSlug}-${Date.now()}`;
+      }
+
+      updateData.slug = newSlug;
+    }
+
     const product = await prisma.product.update({
       where: { id },
-      data: {
-        name: body.name,
-        slug: slugify(body.name),
-        description: body.description,
-        price: body.price,
-        compareAt: body.compareAt,
-        images: JSON.stringify(body.images),
-        featured: body.featured ?? false,
-        isNew: body.isNew ?? false,
-        isBestSeller: body.isBestSeller ?? false,
-        categoryId: body.categoryId,
-        sizes: {
-          deleteMany: {},
-          create: body.sizes,
-        },
-      },
+      data: updateData,
       include: { sizes: true, category: true },
     });
 
