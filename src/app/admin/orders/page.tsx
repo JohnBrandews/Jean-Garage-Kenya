@@ -2,6 +2,9 @@ import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import { OrderActionsDropdown } from "@/components/admin/order-actions-dropdown";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export const metadata = { title: "Manage Orders" };
 
 export default async function AdminOrdersPage() {
