@@ -4,6 +4,7 @@ import { apiError, apiSuccess } from "@/lib/api-utils";
 import { auth } from "@/lib/auth";
 import { generateOrderNumber, getKenyaShippingCost } from "@/lib/utils";
 import { notifyOrderCreated } from "@/lib/notifications";
+import { initializePaystackPayment } from "@/lib/paystack";
 
 export async function GET(req: NextRequest) {
   const orderNumber = req.nextUrl.searchParams.get("orderNumber");
@@ -22,6 +23,10 @@ export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     const body = await req.json();
+
+    if (body.paymentMethod !== "PAYSTACK") {
+      return apiError("Only Paystack payments are supported", 400);
+    }
 
     let userId = session?.user?.id;
 
@@ -61,8 +66,8 @@ export async function POST(req: NextRequest) {
         subtotal,
         shippingCost,
         status: "PENDING",
-        paymentMethod: body.paymentMethod,
-        paymentStatus: "received",
+        paymentMethod: "PAYSTACK",
+        paymentStatus: "pending",
         currency: body.currency || "KES",
         deliveryAddress,
         shippingRegion: body.shippingRegion,
@@ -84,9 +89,29 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    const payment = await initializePaystackPayment({
+      email: body.email,
+      amountKobo: Math.round(Number(total) * 100),
+      reference: orderNumber,
+      callbackUrl: new URL(`/order-confirmation?order=${orderNumber}`, req.nextUrl.origin).toString(),
+      metadata: {
+        orderNumber,
+        customerName: body.fullName,
+        customerPhone: body.phone,
+        shippingRegion: body.shippingRegion,
+      },
+    });
+
+    await prisma.order.update({
+      where: { id: order.id },
+      data: {
+        paymentRef: payment.reference,
+      },
+    });
+
     await notifyOrderCreated(order.id);
 
-    return apiSuccess({ orderNumber, orderId: order.id });
+    return apiSuccess({ orderNumber, orderId: order.id, paymentUrl: payment.authorization_url });
   } catch (error) {
     console.error(error);
     return apiError("Failed to create order", 500);

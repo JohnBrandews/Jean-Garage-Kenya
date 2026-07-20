@@ -4,6 +4,7 @@ import { parseImages, formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Plus, Pencil } from "lucide-react";
 import Image from "next/image";
+import { DeleteProductButton } from "@/components/admin/delete-product-button";
 
 export const metadata = { title: "Manage Products" };
 export const dynamic = "force-dynamic";
@@ -57,16 +58,26 @@ export default async function AdminProductsPage() {
                     </div>
                   </td>
                   <td className="px-6 py-4 text-gray-500">{product.category.name}</td>
-                  <td className="px-6 py-4 font-bold">{formatPrice(Number(product.price))}</td>
+                  <td className="px-6 py-4 font-bold">
+                    <div>{formatPrice(Number(product.price))}</div>
+                    {product.wholesalePrice ? (
+                      <div className="mt-1 text-xs font-medium text-gold-dark">
+                        Wholesale {formatPrice(Number(product.wholesalePrice))} at {product.wholesaleMinQty}+ pcs
+                      </div>
+                    ) : null}
+                  </td>
                   <td className="px-6 py-4">
                     <span className={totalStock === 0 ? "rounded-full bg-red-100 px-3 py-1 font-bold text-red-700" : totalStock <= 5 ? "font-bold text-red-600" : ""}>
                       {totalStock === 0 ? "Out of Stock" : totalStock}
                     </span>
                   </td>
                   <td className="px-6 py-4">
-                    <Link href={`/admin/products/${product.id}`} className="text-gold hover:underline">
-                      <Pencil className="h-4 w-4" />
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link href={`/admin/products/${product.id}`} className="text-gold hover:underline" aria-label={`Edit ${product.name}`}>
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                      <DeleteProductButton productId={product.id} productName={product.name} />
+                    </div>
                   </td>
                 </tr>
               );

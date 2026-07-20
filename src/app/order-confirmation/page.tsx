@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { OrderTrackingTimeline } from "@/components/orders/order-tracking-timeline";
+import { ClearCartOnPaidOrder } from "@/components/orders/clear-cart-on-paid-order";
 
 interface OrderConfirmationProps {
   searchParams: Promise<{ order?: string }>;
@@ -19,13 +20,20 @@ export default async function OrderConfirmationPage({ searchParams }: OrderConfi
       })
     : null;
 
+  const paymentComplete = order?.paymentStatus === "paid";
+
   return (
     <div className="section-padding bg-white">
       <div className="container-luxury max-w-2xl mx-auto text-center">
+        <ClearCartOnPaidOrder paid={paymentComplete} />
         <CheckCircle className="mx-auto h-16 w-16 text-gold" />
-        <h1 className="mt-6 font-display text-4xl font-bold text-charcoal">Order Confirmed!</h1>
+        <h1 className="mt-6 font-display text-4xl font-bold text-charcoal">
+          {paymentComplete ? "Order Confirmed!" : "Order Received!"}
+        </h1>
         <p className="mt-4 text-gray-500">
-          Thank you for shopping with JEANS GARAGE.
+          {paymentComplete
+            ? "Thank you for shopping with JEANS GARAGE."
+            : "Your Paystack payment is being processed. We will confirm it as soon as the gateway completes verification."}
         </p>
 
         {order && (

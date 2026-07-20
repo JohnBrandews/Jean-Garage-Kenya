@@ -53,6 +53,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   name={p.name}
                   slug={p.slug}
                   price={Number(p.price)}
+                  compareAt={p.compareAt ? Number(p.compareAt) : null}
+                  wholesalePrice={p.wholesalePrice ? Number(p.wholesalePrice) : null}
+                  wholesaleMinQty={p.wholesaleMinQty}
                   image={parseImages(p.images)[0]}
                   stock={p.sizes.reduce((sum, size) => sum + size.stock, 0)}
                 />

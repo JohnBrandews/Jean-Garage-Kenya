@@ -161,6 +161,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       slug={product.slug}
                       price={Number(product.price)}
                       compareAt={product.compareAt ? Number(product.compareAt) : null}
+                      wholesalePrice={product.wholesalePrice ? Number(product.wholesalePrice) : null}
+                      wholesaleMinQty={product.wholesaleMinQty}
                       image={parseImages(product.images)[0]}
                       stock={product.sizes.reduce((sum, size) => sum + size.stock, 0)}
                       badge={product.isNew ? "new" : product.isBestSeller ? "bestseller" : product.featured ? "featured" : null}

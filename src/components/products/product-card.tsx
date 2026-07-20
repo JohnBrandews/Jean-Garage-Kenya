@@ -9,11 +9,23 @@ interface ProductCardProps {
   price: number;
   image: string;
   compareAt?: number | null;
+  wholesalePrice?: number | null;
+  wholesaleMinQty?: number | null;
   badge?: "new" | "bestseller" | "featured" | null;
   stock?: number;
 }
 
-export function ProductCard({ name, slug, price, image, compareAt, badge, stock }: ProductCardProps) {
+export function ProductCard({
+  name,
+  slug,
+  price,
+  image,
+  compareAt,
+  wholesalePrice,
+  wholesaleMinQty,
+  badge,
+  stock,
+}: ProductCardProps) {
   const outOfStock = typeof stock === "number" && stock <= 0;
 
   return (
@@ -47,6 +59,11 @@ export function ProductCard({ name, slug, price, image, compareAt, badge, stock 
             <span className="text-sm text-gray-400 line-through">{formatPrice(compareAt)}</span>
           )}
         </div>
+        {wholesalePrice !== null && wholesalePrice !== undefined && wholesaleMinQty !== null && wholesaleMinQty !== undefined && (
+          <p className="text-xs text-gold-dark">
+            Wholesale {formatPrice(wholesalePrice)} at {wholesaleMinQty}+ pcs
+          </p>
+        )}
       </div>
     </Link>
   );

@@ -31,6 +31,8 @@ async function getDashboardStats() {
     ordersToday,
     totalCustomers,
     lowStock,
+    outOfStockCount,
+    totalInventoryUnits,
     recentOrders,
     statusBuckets,
     recentRevenue,
@@ -45,6 +47,10 @@ async function getDashboardStats() {
       where: { stock: { lte: 5 } },
       include: { product: { select: { name: true } } },
       take: 4,
+    }),
+    prisma.productSize.count({ where: { stock: { lte: 0 } } }),
+    prisma.productSize.aggregate({
+      _sum: { stock: true },
     }),
     prisma.order.findMany({
       take: 6,
@@ -81,6 +87,8 @@ async function getDashboardStats() {
     ordersToday,
     totalCustomers,
     lowStock,
+    outOfStockCount,
+    totalInventoryUnits: Number(totalInventoryUnits._sum.stock || 0),
     recentOrders,
     statusBuckets: statusBuckets as StatusBucket[],
     dailyRevenue,
@@ -184,7 +192,7 @@ export default async function AdminDashboard() {
     {
       label: "Low Stock Alerts",
       value: String(stats.lowStock.length),
-      note: "View items in Denim",
+      note: `${stats.outOfStockCount} out of stock | ${stats.totalInventoryUnits} units available`,
       icon: AlertTriangle,
       tone: "warning" as const,
     },
@@ -217,20 +225,22 @@ export default async function AdminDashboard() {
             Welcome back, Admin. Here&apos;s what&apos;s happening today.
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="editorial-panel flex min-w-[16rem] items-center gap-3 px-4 py-3">
+        <div className="flex w-full flex-col gap-4 sm:flex-row sm:items-center">
+          <div className="editorial-panel flex w-full min-w-0 items-center gap-3 px-4 py-3 sm:min-w-[16rem]">
             <Search className="h-4 w-4 text-charcoal/40" />
             <input
               type="text"
               placeholder="Search data..."
-              className="w-full bg-transparent text-sm outline-none placeholder:text-charcoal/40"
+              className="w-full min-w-0 bg-transparent text-sm outline-none placeholder:text-charcoal/40"
             />
           </div>
-          <button className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-charcoal">
-            <Bell className="h-5 w-5" />
-          </button>
-          <div className="h-11 w-11 overflow-hidden rounded-full border border-black/10 bg-charcoal">
-            <div className="h-full w-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_36%),linear-gradient(135deg,#1f2633,#111827)]" />
+          <div className="flex items-center gap-3 self-end sm:self-auto">
+            <button className="flex h-11 w-11 items-center justify-center rounded-full border border-black/10 bg-white text-charcoal">
+              <Bell className="h-5 w-5" />
+            </button>
+            <div className="h-11 w-11 overflow-hidden rounded-full border border-black/10 bg-charcoal">
+              <div className="h-full w-full bg-[radial-gradient(circle_at_30%_30%,rgba(255,255,255,0.45),transparent_36%),linear-gradient(135deg,#1f2633,#111827)]" />
+            </div>
           </div>
         </div>
       </div>

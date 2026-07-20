@@ -201,6 +201,8 @@ export default async function HomePage() {
                   slug={product.slug}
                   price={Number(product.price)}
                   compareAt={product.compareAt ? Number(product.compareAt) : null}
+                  wholesalePrice={product.wholesalePrice ? Number(product.wholesalePrice) : null}
+                  wholesaleMinQty={product.wholesaleMinQty}
                   image={parseImages(product.images)[0]}
                   stock={product.sizes.reduce((sum, size) => sum + size.stock, 0)}
                   badge="new"
@@ -248,6 +250,8 @@ export default async function HomePage() {
                   slug={product.slug}
                   price={Number(product.price)}
                   compareAt={product.compareAt ? Number(product.compareAt) : null}
+                  wholesalePrice={product.wholesalePrice ? Number(product.wholesalePrice) : null}
+                  wholesaleMinQty={product.wholesaleMinQty}
                   image={parseImages(product.images)[0]}
                   stock={product.sizes.reduce((sum, size) => sum + size.stock, 0)}
                   badge="featured"

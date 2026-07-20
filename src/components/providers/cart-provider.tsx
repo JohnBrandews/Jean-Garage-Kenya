@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useCallback, useSyncExternalStore } from "react";
+import { calculateUnitPrice } from "@/lib/utils";
 
 export interface CartItem {
   productId: string;
@@ -8,6 +9,8 @@ export interface CartItem {
   slug: string;
   image: string;
   price: number;
+  wholesalePrice?: number | null;
+  wholesaleMinQty?: number | null;
   size: string;
   quantity: number;
 }
@@ -22,7 +25,8 @@ interface CartContextType {
   itemCount: number;
 }
 
-const CART_KEY = "jkg-cart";
+const CART_KEY = "jkg-cart-v2";
+const LEGACY_CART_KEYS = ["jkg-cart"];
 const listeners = new Set<() => void>();
 const EMPTY_CART: CartItem[] = [];
 let cartCache: CartItem[] | null = null;
@@ -41,7 +45,18 @@ function loadCart(): CartItem[] {
 
   try {
     const saved = localStorage.getItem(CART_KEY);
-    cartCache = saved ? (JSON.parse(saved) as CartItem[]) : [];
+    if (saved) {
+      cartCache = JSON.parse(saved) as CartItem[];
+    } else {
+      const legacySaved = LEGACY_CART_KEYS.map((key) => localStorage.getItem(key)).find(Boolean);
+      if (legacySaved) {
+        cartCache = [];
+        localStorage.setItem(CART_KEY, "[]");
+        LEGACY_CART_KEYS.forEach((key) => localStorage.removeItem(key));
+      } else {
+        cartCache = [];
+      }
+    }
   } catch {
     cartCache = [];
   }
@@ -59,6 +74,7 @@ function writeCart(items: CartItem[]) {
 
   if (typeof window !== "undefined") {
     localStorage.setItem(CART_KEY, JSON.stringify(items));
+    LEGACY_CART_KEYS.forEach((key) => localStorage.removeItem(key));
   }
 
   listeners.forEach((listener) => listener());
@@ -135,7 +151,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clearCart = useCallback(() => writeCart([]), []);
 
-  const total = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const total = items.reduce((sum, i) => sum + calculateUnitPrice(i, i.quantity) * i.quantity, 0);
   const itemCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
   return (

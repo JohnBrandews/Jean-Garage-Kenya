@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useCart } from "@/components/providers/cart-provider";
-import { formatPrice } from "@/lib/utils";
+import { calculateUnitPrice, calculateWholesaleSavings, formatPrice } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2, ArrowRight } from "lucide-react";
 
@@ -33,48 +33,72 @@ export default function CartPage() {
 
         <div className="mt-12 grid gap-12 lg:grid-cols-3">
           <div className="lg:col-span-2 space-y-6">
-            {items.map((item) => (
-              <div
-                key={`${item.productId}-${item.size}`}
-                className="flex gap-6 border-b border-border pb-6"
-              >
-                <div className="relative h-32 w-24 shrink-0 overflow-hidden bg-light-gray">
-                  <Image src={item.image} alt={item.name} fill className="object-cover" />
-                </div>
-                <div className="flex flex-1 flex-col justify-between">
-                  <div>
-                    <Link href={`/products/${item.slug}`} className="font-display text-lg font-semibold hover:text-gold">
-                      {item.name}
-                    </Link>
-                    <p className="mt-1 text-sm text-gray-500">Size: {item.size}</p>
-                    <p className="mt-1 font-bold">{formatPrice(item.price)}</p>
+            {items.map((item) => {
+              const unitPrice = calculateUnitPrice(item, item.quantity);
+              const lineTotal = unitPrice * item.quantity;
+              const savings = calculateWholesaleSavings(item, item.quantity);
+              const hasWholesale = item.wholesalePrice !== null && item.wholesalePrice !== undefined && item.wholesaleMinQty !== null && item.wholesaleMinQty !== undefined;
+              const wholesaleActive = hasWholesale && item.quantity >= (item.wholesaleMinQty as number);
+
+              return (
+                <div
+                  key={`${item.productId}-${item.size}`}
+                  className="flex gap-6 border-b border-border pb-6"
+                >
+                  <div className="relative h-32 w-24 shrink-0 overflow-hidden bg-light-gray">
+                    <Image src={item.image} alt={item.name} fill className="object-cover" />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center border border-border">
+                  <div className="flex flex-1 flex-col justify-between">
+                    <div>
+                      <Link href={`/products/${item.slug}`} className="font-display text-lg font-semibold hover:text-gold">
+                        {item.name}
+                      </Link>
+                      <p className="mt-1 text-sm text-gray-500">Size: {item.size}</p>
+                      <p className="mt-1 font-bold">{formatPrice(unitPrice)} per piece</p>
+                      {hasWholesale && (
+                        <p className="mt-2 text-xs text-charcoal/60">
+                          Wholesale: {formatPrice(item.wholesalePrice as number)} each at {item.wholesaleMinQty}+ pieces
+                        </p>
+                      )}
+                      {wholesaleActive ? (
+                        <p className="mt-2 text-xs font-semibold text-green-700">
+                          Wholesale applied. Saving {formatPrice(savings)}
+                        </p>
+                      ) : hasWholesale ? (
+                        <p className="mt-2 text-xs text-gold-dark">
+                          Add {Math.max((item.wholesaleMinQty as number) - item.quantity, 0)} more piece
+                          {(item.wholesaleMinQty as number) - item.quantity === 1 ? "" : "s"} to unlock wholesale.
+                        </p>
+                      ) : null}
+                      <p className="mt-2 font-bold">{formatPrice(lineTotal)}</p>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center border border-border">
+                        <button
+                          onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)}
+                          className="px-2 py-1 hover:bg-light-gray"
+                        >
+                          <Minus className="h-3 w-3" />
+                        </button>
+                        <span className="px-3 text-sm font-bold">{item.quantity}</span>
+                        <button
+                          onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)}
+                          className="px-2 py-1 hover:bg-light-gray"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </div>
                       <button
-                        onClick={() => updateQuantity(item.productId, item.size, item.quantity - 1)}
-                        className="px-2 py-1 hover:bg-light-gray"
+                        onClick={() => removeItem(item.productId, item.size)}
+                        className="text-gray-400 hover:text-red-500"
                       >
-                        <Minus className="h-3 w-3" />
-                      </button>
-                      <span className="px-3 text-sm font-bold">{item.quantity}</span>
-                      <button
-                        onClick={() => updateQuantity(item.productId, item.size, item.quantity + 1)}
-                        className="px-2 py-1 hover:bg-light-gray"
-                      >
-                        <Plus className="h-3 w-3" />
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
-                    <button
-                      onClick={() => removeItem(item.productId, item.size)}
-                      className="text-gray-400 hover:text-red-500"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="border border-border p-8 h-fit">

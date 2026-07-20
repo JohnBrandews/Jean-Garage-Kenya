@@ -20,6 +20,10 @@ export const registerSchema = z
 export const productSchema = z.object({
   name: z.string().min(2),
   description: z.string().min(10),
+  brand: z.string().optional().nullable(),
+  color: z.string().optional().nullable(),
+  wholesalePrice: z.coerce.number().positive().optional().nullable(),
+  wholesaleMinQty: z.coerce.number().int().min(1).default(10),
   price: z.coerce.number().positive(),
   compareAt: z.coerce.number().positive().optional().nullable(),
   categoryId: z.string().uuid(),
@@ -62,7 +66,7 @@ export const checkoutSchema = z.object({
   country: z.string().default("Kenya"),
   postalCode: z.string().optional(),
   shippingRegion: z.enum(["KENYA", "EAST_AFRICA", "INTERNATIONAL"]),
-  paymentMethod: z.enum(["PAYSTACK", "MPESA", "CARD"]),
+  paymentMethod: z.enum(["PAYSTACK"]),
   currency: z.enum(["KES", "USD"]).default("KES"),
 });
 

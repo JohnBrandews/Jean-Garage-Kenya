@@ -45,3 +45,59 @@ export function isNairobiLocation(city?: string | null, county?: string | null) 
 export function getKenyaShippingCost(city?: string | null, county?: string | null) {
   return isNairobiLocation(city, county) ? 100 : 300;
 }
+
+export function calculateUnitPrice(
+  product: {
+    price: number | string;
+    wholesalePrice?: number | string | null;
+    wholesaleMinQty?: number | null;
+  },
+  quantity: number
+) {
+  const retailPrice = Number(product.price);
+  const wholesalePrice =
+    product.wholesalePrice === null || product.wholesalePrice === undefined
+      ? null
+      : Number(product.wholesalePrice);
+  const wholesaleMinQty = product.wholesaleMinQty ?? null;
+
+  if (
+    wholesalePrice !== null &&
+    wholesaleMinQty !== null &&
+    Number.isFinite(wholesalePrice) &&
+    Number.isFinite(wholesaleMinQty) &&
+    quantity >= wholesaleMinQty
+  ) {
+    return wholesalePrice;
+  }
+
+  return retailPrice;
+}
+
+export function calculateWholesaleSavings(
+  product: {
+    price: number | string;
+    wholesalePrice?: number | string | null;
+    wholesaleMinQty?: number | null;
+  },
+  quantity: number
+) {
+  const retailPrice = Number(product.price);
+  const wholesalePrice =
+    product.wholesalePrice === null || product.wholesalePrice === undefined
+      ? null
+      : Number(product.wholesalePrice);
+  const wholesaleMinQty = product.wholesaleMinQty ?? null;
+
+  if (
+    wholesalePrice !== null &&
+    wholesaleMinQty !== null &&
+    Number.isFinite(wholesalePrice) &&
+    Number.isFinite(wholesaleMinQty) &&
+    quantity >= wholesaleMinQty
+  ) {
+    return Math.max(0, (retailPrice - wholesalePrice) * quantity);
+  }
+
+  return 0;
+}

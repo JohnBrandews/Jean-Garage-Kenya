@@ -14,6 +14,7 @@ export function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/account";
+  const pageError = searchParams.get("error");
   const [error, setError] = useState("");
 
   const {
@@ -33,7 +34,7 @@ export function LoginForm() {
     });
 
     if (result?.error) {
-      setError("Invalid email or password");
+      setError(getAuthErrorMessage(result.error));
       return;
     }
 
@@ -58,6 +59,12 @@ export function LoginForm() {
           </p>
         </div>
 
+        {pageError && (
+          <div className="mb-6 rounded-[1.15rem] border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {getAuthErrorMessage(pageError)}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <Input label="Email" type="email" placeholder="you@example.com" {...register("email")} error={errors.email?.message} />
           <Input label="Password" type="password" placeholder="Enter your password" {...register("password")} error={errors.password?.message} />
@@ -80,7 +87,7 @@ export function LoginForm() {
             type="button"
             variant="secondary"
             className="mt-6 w-full rounded-none border-[#17141b] py-4 text-sm tracking-[0.22em]"
-            onClick={() => signIn("google", { callbackUrl })}
+            onClick={() => signIn("google", { callbackUrl, prompt: "select_account" })}
           >
             Continue with Google
           </Button>
@@ -88,4 +95,16 @@ export function LoginForm() {
       </div>
     </AuthPageShell>
   );
+}
+
+function getAuthErrorMessage(error: string) {
+  switch (error) {
+    case "OAuthAccountNotLinked":
+      return "That Google account is already linked to a different profile. Use the same sign-in method you used originally, or sign out and choose the correct Google account.";
+    case "CredentialsSignin":
+    case "CallbackRouteError":
+      return "Invalid email or password. If you normally sign in with Google, continue with Google instead.";
+    default:
+      return "Sign-in failed. Please try again.";
+  }
 }

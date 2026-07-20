@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { revalidatePath } from "next/cache";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { apiError, apiSuccess, requireAdmin } from "@/lib/api-utils";
 import { slugify } from "@/lib/utils";
@@ -38,6 +39,10 @@ export async function POST(req: NextRequest) {
         name: body.name,
         slug,
         description: body.description,
+        brand: body.brand?.trim() || null,
+        color: body.color?.trim() || null,
+        wholesalePrice: body.wholesalePrice === "" || body.wholesalePrice === null || body.wholesalePrice === undefined ? null : body.wholesalePrice,
+        wholesaleMinQty: Number(body.wholesaleMinQty || 10),
         price: body.price,
         compareAt: body.compareAt,
         images: JSON.stringify(body.images),
@@ -46,7 +51,7 @@ export async function POST(req: NextRequest) {
         isBestSeller: body.isBestSeller ?? false,
         categoryId: body.categoryId,
         sizes: {
-          create: body.sizes,
+          create: body.sizes as Prisma.ProductSizeCreateWithoutProductInput[],
         },
       },
       include: { sizes: true, category: true },

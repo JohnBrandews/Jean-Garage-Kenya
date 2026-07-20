@@ -109,6 +109,10 @@ model Product {
   description String
   price       Decimal
   compareAt   Decimal?
+  brand       String?
+  color       String?
+  wholesalePrice Decimal?
+  wholesaleMinQty Int        @default(10)
   images      String
   featured    Boolean       @default(false)
   isNew       Boolean       @default(false)
