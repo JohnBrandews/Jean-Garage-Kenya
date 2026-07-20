@@ -28,7 +28,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       featured: body.featured ?? false,
       isNew: body.isNew ?? false,
       isBestSeller: body.isBestSeller ?? false,
-      categoryId: body.categoryId,
+      category: {
+        connect: { id: body.categoryId },
+      },
       sizes: {
         deleteMany: {},
         create: body.sizes as Prisma.ProductSizeCreateWithoutProductInput[],

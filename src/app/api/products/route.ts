@@ -49,7 +49,9 @@ export async function POST(req: NextRequest) {
         featured: body.featured ?? false,
         isNew: body.isNew ?? false,
         isBestSeller: body.isBestSeller ?? false,
-        categoryId: body.categoryId,
+        category: {
+          connect: { id: body.categoryId },
+        },
         sizes: {
           create: body.sizes as Prisma.ProductSizeCreateWithoutProductInput[],
         },
