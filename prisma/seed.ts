@@ -134,6 +134,17 @@ async function main() {
   });
 
   await prisma.user.upsert({
+    where: { email: "adminjean1@gmail.com" },
+    update: {},
+    create: {
+      name: "Admin Jean 1",
+      email: "adminjean1@gmail.com",
+      password: await bcrypt.hash("Admin123!", 12),
+      role: "ADMIN",
+    },
+  });
+
+  await prisma.user.upsert({
     where: { email: "customer@example.com" },
     update: {},
     create: {
@@ -189,6 +200,7 @@ async function main() {
 
   console.log("Seed completed!");
   console.log("Admin: AdminJean@gmail.com / Adminjean123!");
+  console.log("Admin 2: adminjean1@gmail.com / Admin123!");
   console.log("Customer: customer@example.com / customer123");
 }
 

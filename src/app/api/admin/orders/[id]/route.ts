@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { requireAdmin, apiError, apiSuccess } from "@/lib/api-utils";
 import { prisma } from "@/lib/prisma";
-import { notifyOrderStatusChanged } from "@/lib/notifications";
+import { notifyOrderStatusChanged, notifyPaymentReceived } from "@/lib/notifications";
 
 export async function PATCH(
   req: NextRequest,
@@ -14,7 +14,7 @@ export async function PATCH(
 
     const previousOrder = await prisma.order.findUnique({
       where: { id },
-      select: { status: true },
+      select: { status: true, paymentStatus: true },
     });
 
     const order = await prisma.order.update({
@@ -26,7 +26,9 @@ export async function PATCH(
       },
     });
 
-    if (body.status && body.status !== previousOrder?.status) {
+    if (body.paymentStatus === "paid" && body.paymentStatus !== previousOrder?.paymentStatus) {
+      await notifyPaymentReceived(order.id);
+    } else if (body.status && body.status !== previousOrder?.status) {
       await notifyOrderStatusChanged(order.id, order.status);
     }
 

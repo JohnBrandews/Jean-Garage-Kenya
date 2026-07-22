@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { apiSuccess } from "@/lib/api-utils";
+import { notifyPaymentReceived } from "@/lib/notifications";
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -22,7 +23,7 @@ export async function POST(req: NextRequest) {
 
   if (event.event === "charge.success") {
     const reference = event.data.reference;
-    await prisma.order.updateMany({
+    const updatedOrder = await prisma.order.update({
       where: { orderNumber: reference },
       data: {
         status: "PAID",
@@ -30,6 +31,8 @@ export async function POST(req: NextRequest) {
         paymentRef: event.data.id?.toString(),
       },
     });
+
+    await notifyPaymentReceived(updatedOrder.id);
   }
 
   return apiSuccess({ received: true });

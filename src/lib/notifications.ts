@@ -282,30 +282,18 @@ async function sendNotificationEmail({
   await sendViaBrevo({ to, subject, htmlContent, textContent });
 }
 
-export async function notifyOrderCreated(orderId: string) {
-  const [order, admins, settings] = await Promise.all([
-    prisma.order.findUnique({
-      where: { id: orderId },
-      include: {
-        user: { select: { name: true, email: true } },
-        items: { include: { product: { select: { name: true } } } },
-      },
-    }),
+async function getAdminRecipients() {
+  const [admins, settings] = await Promise.all([
     prisma.user.findMany({
       where: { role: "ADMIN" },
       select: { name: true, email: true },
     }),
-    prisma.storeSettings.findFirst({ select: { email: true, storeName: true } }),
+    prisma.storeSettings.findFirst({ select: { email: true } }),
   ]);
 
-  if (!order) return;
-
-  const customerMessage =
-    "Your JEANS GARAGE order has been received. We're preparing your pieces now and you can track every stage from your account dashboard.";
-  const adminMessage = "A new order has been placed and is waiting in the dashboard for review.";
-
   const recipients = new Set<string>();
-  const adminRecipients = admins
+
+  return admins
     .map((admin) => admin.email)
     .concat(settings?.email ? [settings.email] : [])
     .filter((email) => {
@@ -313,6 +301,25 @@ export async function notifyOrderCreated(orderId: string) {
       recipients.add(email);
       return true;
     });
+}
+
+export async function notifyOrderCreated(orderId: string) {
+  const [order, adminRecipients] = await Promise.all([
+    prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        user: { select: { name: true, email: true } },
+        items: { include: { product: { select: { name: true } } } },
+      },
+    }),
+    getAdminRecipients(),
+  ]);
+
+  if (!order) return;
+
+  const customerMessage =
+    "Your JEANS GARAGE order has been received. We're preparing your pieces now and you can track every stage from your account dashboard.";
+  const adminMessage = "A new order has been placed and is waiting in the dashboard for review.";
 
   await Promise.allSettled([
     sendNotificationEmail({
@@ -332,14 +339,52 @@ export async function notifyOrderCreated(orderId: string) {
   ]);
 }
 
+export async function notifyPaymentReceived(orderId: string) {
+  const [order, adminRecipients] = await Promise.all([
+    prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        user: { select: { name: true, email: true } },
+        items: { include: { product: { select: { name: true } } } },
+      },
+    }),
+    getAdminRecipients(),
+  ]);
+
+  if (!order) return;
+
+  const customerMessage = "Your payment has been received successfully. Your order is now in the dashboard for review.";
+  const adminMessage = "Payment has been received for an order and it is now ready for dashboard review.";
+
+  await Promise.allSettled([
+    sendNotificationEmail({
+      to: order.user.email,
+      subject: `Payment received for JEANS GARAGE order ${order.orderNumber}`,
+      htmlContent: buildCustomerHtml(order as OrderRecord, customerMessage),
+      textContent: `${customerMessage}\n\nTrack: ${appUrl(`/track-order?orderNumber=${order.orderNumber}`)}`,
+    }),
+    ...adminRecipients.map((email) =>
+      sendNotificationEmail({
+        to: email,
+        subject: `Payment received: ${order.orderNumber}`,
+        htmlContent: buildAdminHtml(order as OrderRecord, adminMessage),
+        textContent: `${adminMessage}\n\nOpen dashboard: ${appUrl("/admin/orders")}`,
+      })
+    ),
+  ]);
+}
+
 export async function notifyOrderStatusChanged(orderId: string, status: OrderStatus) {
-  const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: {
-      user: { select: { name: true, email: true } },
-      items: { include: { product: { select: { name: true } } } },
-    },
-  });
+  const [order, adminRecipients] = await Promise.all([
+    prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        user: { select: { name: true, email: true } },
+        items: { include: { product: { select: { name: true } } } },
+      },
+    }),
+    getAdminRecipients(),
+  ]);
 
   if (!order) return;
 
@@ -358,4 +403,15 @@ export async function notifyOrderStatusChanged(orderId: string, status: OrderSta
     htmlContent: buildCustomerHtml(order as OrderRecord, messages[status]),
     textContent: `${messages[status]}\n\nTrack: ${appUrl(`/track-order?orderNumber=${order.orderNumber}`)}`,
   });
+
+  await Promise.allSettled(
+    adminRecipients.map((email) =>
+      sendNotificationEmail({
+        to: email,
+        subject: `Order ${order.orderNumber} status updated: ${status}`,
+        htmlContent: buildAdminHtml(order as OrderRecord, `Order status updated to ${status}.`),
+        textContent: `Order status updated to ${status}.\n\nOpen dashboard: ${appUrl("/admin/orders")}`,
+      })
+    )
+  );
 }
