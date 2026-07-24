@@ -50,7 +50,7 @@ export default function CheckoutPage() {
     INTERNATIONAL: 3500,
   };
 
-  const shippingCost = shippingCosts[shippingRegion as keyof typeof shippingCosts] || 300;
+  const shippingCost = shippingCosts[shippingRegion as keyof typeof shippingCosts] ?? 300;
   const orderTotal = total + shippingCost;
 
   if (items.length === 0) {
