@@ -185,16 +185,26 @@ async function main() {
 
   await prisma.storeSettings.upsert({
     where: { id: "default" },
-    update: {},
+    update: {
+      storeName: "JEANS GARAGE",
+      email: "adminjean1@gmail.com",
+      phone: "+254 724083276",
+      whatsapp: "+254 724083276",
+      address: "Eastleigh , Nairobi, Kenya",
+      instagram: "https://instagram.com/jeansgaragekenya",
+      facebook: "https://facebook.com/jeansgaragekenya",
+      kenyaShipping: 0,
+    },
     create: {
       id: "default",
       storeName: "JEANS GARAGE",
-      email: "info@jeansgarage.co.ke",
-      phone: "+254 700 123 456",
-      whatsapp: "+254 700 123 456",
-      address: "Westlands, Nairobi, Kenya",
+      email: "adminjean1@gmail.com",
+      phone: "+254 724083276",
+      whatsapp: "+254 724083276",
+      address: "Eastleigh , Nairobi, Kenya",
       instagram: "https://instagram.com/jeansgaragekenya",
       facebook: "https://facebook.com/jeansgaragekenya",
+      kenyaShipping: 0,
     },
   });
 

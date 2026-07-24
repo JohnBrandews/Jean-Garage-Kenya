@@ -43,7 +43,7 @@ export function isNairobiLocation(city?: string | null, county?: string | null) 
 }
 
 export function getKenyaShippingCost(city?: string | null, county?: string | null) {
-  return isNairobiLocation(city, county) ? 100 : 300;
+  return isNairobiLocation(city, county) ? 0 : 300;
 }
 
 export function calculateUnitPrice(
