@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { OrderTrackingTimeline } from "@/components/orders/order-tracking-timeline";
-import { ClearCartOnPaidOrder } from "@/components/orders/clear-cart-on-paid-order";
+import { ClearCartWhenOrderPaid } from "@/components/orders/clear-cart-when-order-paid";
 
 interface OrderConfirmationProps {
   searchParams: Promise<{ order?: string }>;
@@ -14,7 +14,7 @@ export default async function OrderConfirmationPage({ searchParams }: OrderConfi
   const { order: orderNumber } = await searchParams;
 
   const order = orderNumber
-    ? await prisma.order.findUnique({
+        ? await prisma.order.findUnique({
         where: { orderNumber },
         include: { items: { include: { product: true } } },
       })
@@ -25,7 +25,7 @@ export default async function OrderConfirmationPage({ searchParams }: OrderConfi
   return (
     <div className="section-padding bg-white">
       <div className="container-luxury max-w-2xl mx-auto text-center">
-        <ClearCartOnPaidOrder paid={paymentComplete} />
+        <ClearCartWhenOrderPaid orderNumber={orderNumber} paid={paymentComplete} />
         <CheckCircle className="mx-auto h-16 w-16 text-gold" />
         <h1 className="mt-6 font-display text-4xl font-bold text-charcoal">
           {paymentComplete ? "Order Confirmed!" : "Order Received!"}

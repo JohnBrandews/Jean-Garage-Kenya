@@ -5,7 +5,7 @@ import Image from "next/image";
 import { formatPrice, parseImages, calculateUnitPrice, calculateWholesaleSavings } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/components/providers/cart-provider";
-import { Star, Minus, Plus, Check, BadgePercent, Sparkles } from "lucide-react";
+import { Star, Minus, Plus, BadgePercent, Sparkles, ShoppingCart } from "lucide-react";
 import { motion } from "framer-motion";
 
 interface ProductDetailProps {
@@ -164,8 +164,6 @@ export function ProductDetail({ product }: ProductDetailProps) {
             )}
           </div>
 
-          <p className="mt-6 leading-relaxed text-gray-600">{product.description}</p>
-
           {wholesalePrice !== null && wholesaleMinQty !== null && (
             <div className="mt-4 flex items-start gap-3 rounded-2xl border border-gold/20 bg-gold/5 px-4 py-4 text-sm text-charcoal/80">
               <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-gold" />
@@ -207,40 +205,40 @@ export function ProductDetail({ product }: ProductDetailProps) {
             )}
           </div>
 
-          <div className="mt-6 flex items-center gap-4">
-            <span className="text-sm font-bold uppercase tracking-widest">Qty</span>
-            <div className="flex items-center border border-border">
-              <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-2 hover:bg-light-gray">
-                <Minus className="h-4 w-4" />
-              </button>
-              <span className="px-4 py-2 font-bold">{quantity}</span>
-              <button onClick={() => setQuantity(quantity + 1)} className="px-3 py-2 hover:bg-light-gray">
-                <Plus className="h-4 w-4" />
-              </button>
+          <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-end">
+            <div>
+              <span className="mb-2 block text-sm font-bold uppercase tracking-widest">Qty</span>
+              <div className="flex items-center border border-border bg-white">
+                <button onClick={() => setQuantity(Math.max(1, quantity - 1))} className="px-3 py-2 hover:bg-light-gray">
+                  <Minus className="h-4 w-4" />
+                </button>
+                <span className="min-w-12 px-4 py-2 text-center font-bold">{quantity}</span>
+                <button onClick={() => setQuantity(quantity + 1)} className="px-3 py-2 hover:bg-light-gray">
+                  <Plus className="h-4 w-4" />
+                </button>
+              </div>
             </div>
+
+            <motion.div className="sm:flex-1" whileTap={{ scale: 0.98 }}>
+              <Button
+                variant="secondary"
+                size="default"
+                className="w-full justify-center gap-2 normal-case tracking-normal"
+                disabled={isOutOfStock || !selectedSize || !selectedSizeData || selectedSizeData.stock === 0}
+                onClick={handleAddToCart}
+              >
+                <ShoppingCart className="h-4 w-4" />
+                {added ? "Added" : "Add to cart"}
+              </Button>
+            </motion.div>
           </div>
 
           {quantityHint && <p className="mt-3 text-sm text-charcoal/70">{quantityHint}</p>}
 
-          <motion.div className="mt-8" whileTap={{ scale: 0.98 }}>
-            <Button
-              variant="primary"
-              size="lg"
-              className="w-full"
-              disabled={isOutOfStock || !selectedSize || !selectedSizeData || selectedSizeData.stock === 0}
-              onClick={handleAddToCart}
-            >
-              {added ? (
-                <span className="flex items-center gap-2">
-                  <Check className="h-5 w-5" /> Added to Cart
-                </span>
-              ) : isOutOfStock ? (
-                "Out of Stock"
-              ) : (
-                "Add to Cart"
-              )}
-            </Button>
-          </motion.div>
+          <div className="mt-8 border-t border-border pt-8">
+            <p className="text-xs font-bold uppercase tracking-[0.25em] text-charcoal/45">Description</p>
+            <p className="mt-3 leading-relaxed text-gray-600">{product.description}</p>
+          </div>
 
           {product.reviews.length > 0 && (
             <div className="mt-12 border-t border-border pt-8">

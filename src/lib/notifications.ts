@@ -317,26 +317,18 @@ export async function notifyOrderCreated(orderId: string) {
 
   if (!order) return;
 
-  const customerMessage =
-    "Your JEANS GARAGE order has been received. We're preparing your pieces now and you can track every stage from your account dashboard.";
   const adminMessage = "A new order has been placed and is waiting in the dashboard for review.";
 
-  await Promise.allSettled([
-    sendNotificationEmail({
-      to: order.user.email,
-      subject: `Your JEANS GARAGE order ${order.orderNumber} has been received`,
-      htmlContent: buildCustomerHtml(order as OrderRecord, customerMessage),
-      textContent: `${customerMessage}\n\nTrack: ${appUrl(`/track-order?orderNumber=${order.orderNumber}`)}`,
-    }),
-    ...adminRecipients.map((email) =>
+  await Promise.allSettled(
+    adminRecipients.map((email) =>
       sendNotificationEmail({
         to: email,
         subject: `New JEANS GARAGE order received: ${order.orderNumber}`,
         htmlContent: buildAdminHtml(order as OrderRecord, adminMessage),
         textContent: `${adminMessage}\n\nOpen dashboard: ${appUrl("/admin/orders")}`,
       })
-    ),
-  ]);
+    )
+  );
 }
 
 export async function notifyPaymentReceived(orderId: string) {
@@ -353,7 +345,8 @@ export async function notifyPaymentReceived(orderId: string) {
 
   if (!order) return;
 
-  const customerMessage = "Your payment has been received successfully. Your order is now in the dashboard for review.";
+  const customerMessage =
+    "Your payment has been received successfully. Your order has now been received and is in the dashboard for review.";
   const adminMessage = "Payment has been received for an order and it is now ready for dashboard review.";
 
   await Promise.allSettled([

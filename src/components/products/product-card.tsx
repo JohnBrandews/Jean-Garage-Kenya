@@ -30,13 +30,13 @@ export function ProductCard({
 
   return (
     <Link href={`/products/${slug}`} className="group block">
-      <div className="relative aspect-[3/4] overflow-hidden bg-surface">
+      <div className="relative aspect-square overflow-hidden bg-light-gray">
         <Image
           src={image}
           alt={name}
           fill
-          className={`object-cover transition-transform duration-500 group-hover:scale-105 ${outOfStock ? "grayscale" : ""}`}
-          sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+          className={`object-contain p-2 transition-transform duration-500 group-hover:scale-105 ${outOfStock ? "grayscale" : ""}`}
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
         />
         {outOfStock && (
           <span className="absolute bottom-3 left-3 z-10 bg-charcoal px-3 py-1 text-[10px] font-bold uppercase tracking-[0.22em] text-white">

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ShoppingBag, Search, User, Menu, X } from "lucide-react";
 import { useCart } from "@/components/providers/cart-provider";
 import { signOut, useSession } from "next-auth/react";
@@ -21,9 +21,20 @@ const navLinks = [
 
 export function Header() {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { itemCount } = useCart();
+  const { itemCount, clearCart } = useCart();
   const { data: session } = useSession();
   const dashboardHref = session?.user?.role === "ADMIN" ? "/admin" : "/account";
+  const previousUserId = useRef<string | undefined>(undefined);
+
+  useEffect(() => {
+    const currentUserId = session?.user?.id;
+
+    if (previousUserId.current && !currentUserId) {
+      clearCart();
+    }
+
+    previousUserId.current = currentUserId;
+  }, [clearCart, session?.user?.id]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-black/5 bg-[rgba(247,244,239,0.92)] backdrop-blur-xl">
@@ -94,7 +105,10 @@ export function Header() {
                     </Link>
                     <button
                       type="button"
-                      onClick={() => signOut({ callbackUrl: "/" })}
+                      onClick={() => {
+                        clearCart();
+                        signOut({ callbackUrl: "/" });
+                      }}
                       className="block w-full px-4 py-3 text-left text-sm text-charcoal hover:bg-light-gray"
                     >
                       Sign Out
@@ -175,6 +189,7 @@ export function Header() {
                 type="button"
                 onClick={() => {
                   setMobileOpen(false);
+                  clearCart();
                   signOut({ callbackUrl: "/" });
                 }}
                 className="inline-flex items-center justify-center bg-gold px-4 py-3 text-xs font-bold uppercase tracking-[0.2em] text-white"

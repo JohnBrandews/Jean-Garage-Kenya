@@ -192,7 +192,7 @@ export default async function HomePage() {
               actionHref="/products?sort=newest"
               actionLabel="View all"
             />
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
               {newArrivals.map((product) => (
                 <ProductCard
                   key={product.id}
@@ -241,7 +241,7 @@ export default async function HomePage() {
               title="Featured Pieces"
               description="The edit that anchors the season, balancing refined essentials with confident silhouettes."
             />
-            <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
               {featured.map((product) => (
                 <ProductCard
                   key={product.id}

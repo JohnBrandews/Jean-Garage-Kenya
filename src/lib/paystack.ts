@@ -38,6 +38,8 @@ export async function initializePaystackPayment(input: {
       callback_url: input.callbackUrl,
       channels: ["card", "mobile_money", "bank_transfer"],
       metadata: input.metadata,
+      subaccount: process.env.PAYSTACK_SUBACCOUNT_CODE,
+      bearer: "subaccount",
     }),
   });
 
