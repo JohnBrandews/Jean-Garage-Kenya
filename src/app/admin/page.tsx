@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { ComponentType, ReactNode } from "react";
+import { OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { formatPrice } from "@/lib/utils";
 import {
@@ -19,10 +20,17 @@ type StatusBucket = {
   _sum: { total: string | number | null };
 };
 
-const revenueWhere = {
+const paidRevenueStatuses: OrderStatus[] = [
+  OrderStatus.PAID,
+  OrderStatus.PROCESSING,
+  OrderStatus.SHIPPED,
+  OrderStatus.DELIVERED,
+];
+
+const revenueWhere: Prisma.OrderWhereInput = {
   OR: [
     { paymentStatus: "paid" },
-    { status: { in: ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"] } },
+    { status: { in: paidRevenueStatuses } },
   ],
 };
 
@@ -71,7 +79,9 @@ async function getDashboardStats() {
       _sum: { total: true },
     }),
     prisma.order.findMany({
-      where: { createdAt: { gte: sevenDaysAgo }, ...revenueWhere },
+      where: {
+        AND: [{ createdAt: { gte: sevenDaysAgo } }, revenueWhere],
+      },
       select: { createdAt: true, total: true },
       orderBy: { createdAt: "asc" },
     }),
