@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { SetPasswordForm } from "@/components/account/set-password-form";
 
 export const metadata = { title: "My Account" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AccountPage() {
   const session = await auth();

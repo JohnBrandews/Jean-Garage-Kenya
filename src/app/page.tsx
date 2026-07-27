@@ -6,6 +6,9 @@ import { ProductCard } from "@/components/products/product-card";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Shield, Truck, Sparkles, BadgePercent } from "lucide-react";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 async function getHomeData() {
   const [featured, newArrivals, bestSellers] = await Promise.all([
     prisma.product.findMany({

@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { ProductForm } from "@/components/admin/product-form";
 
 export const metadata = { title: "Add Product" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function NewProductPage({
   searchParams,

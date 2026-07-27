@@ -4,6 +4,8 @@ import { ProductForm } from "@/components/admin/product-form";
 import { DeleteProductButton } from "@/components/admin/delete-product-button";
 
 export const metadata = { title: "Edit Product" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

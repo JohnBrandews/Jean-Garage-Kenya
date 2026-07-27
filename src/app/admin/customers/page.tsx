@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
 export const metadata = { title: "Manage Customers" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminCustomersPage() {
   const customers = await prisma.user.findMany({

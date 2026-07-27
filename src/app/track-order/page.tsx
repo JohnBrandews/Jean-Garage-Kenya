@@ -1,6 +1,9 @@
 import { TrackOrderClient } from "./track-order-client";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface TrackOrderPageProps {
   searchParams: Promise<{ orderNumber?: string }>;
 }

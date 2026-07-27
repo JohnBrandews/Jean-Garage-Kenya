@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import { SettingsForm } from "@/components/admin/settings-form";
 
 export const metadata = { title: "Store Settings" };
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminSettingsPage() {
   const settings = await prisma.storeSettings.findFirst();

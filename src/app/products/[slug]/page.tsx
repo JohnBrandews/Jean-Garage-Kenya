@@ -4,6 +4,9 @@ import { parseImages } from "@/lib/utils";
 import { ProductDetail } from "@/components/products/product-detail";
 import { ProductCard } from "@/components/products/product-card";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 interface ProductPageProps {
   params: Promise<{ slug: string }>;
 }
