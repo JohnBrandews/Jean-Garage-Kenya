@@ -1,8 +1,8 @@
 import { NextRequest } from "next/server";
 import crypto from "crypto";
-import { prisma } from "@/lib/prisma";
 import { apiSuccess } from "@/lib/api-utils";
 import { notifyPaymentReceived } from "@/lib/notifications";
+import { finalizePaidOrderByReference } from "@/lib/order-payments";
 
 export async function POST(req: NextRequest) {
   try {
@@ -65,41 +65,25 @@ export async function POST(req: NextRequest) {
       return new Response("Payment reference missing", { status: 400 });
     }
 
-    // Log what we're looking for
-    console.log("Webhook: Looking for order with orderNumber:", reference);
+    const updatedOrder = await finalizePaidOrderByReference(
+      reference,
+      event.data?.id?.toString() || reference
+    );
 
-    const order = await prisma.order.findUnique({ 
-      where: { orderNumber: reference } 
-    });
-
-    // Log whether order was found
     console.log("Webhook: Order lookup result:", {
-      found: !!order,
-      orderId: order?.id ?? null,
-      currentStatus: order?.status ?? null,
-      currentPaymentStatus: order?.paymentStatus ?? null,
+      found: !!updatedOrder,
+      orderId: updatedOrder?.id ?? null,
+      currentStatus: updatedOrder?.status ?? null,
+      currentPaymentStatus: updatedOrder?.paymentStatus ?? null,
     });
 
-    if (!order) {
-      console.error("Webhook: No order found for reference:", reference);
+    if (!updatedOrder) {
       return new Response("Order not found", { status: 404 });
     }
 
-    const wasAlreadyPaid = order.paymentStatus === "paid";
-
-    if (wasAlreadyPaid) {
-      console.log("Webhook: Order already paid, skipping update:", reference);
+    if (updatedOrder.paymentStatus !== "paid") {
       return apiSuccess({ received: true });
     }
-
-    const updatedOrder = await prisma.order.update({
-      where: { id: order.id },
-      data: {
-        status: order.status === "PENDING" ? "PAID" : order.status,
-        paymentStatus: "paid",
-        paymentRef: event.data?.id?.toString() || reference,
-      },
-    });
 
     console.log("Webhook: Order updated successfully:", {
       orderId: updatedOrder.id,

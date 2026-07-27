@@ -82,13 +82,6 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    for (const item of body.items) {
-      await prisma.productSize.updateMany({
-        where: { productId: item.productId, size: item.size },
-        data: { stock: { decrement: item.quantity } },
-      });
-    }
-
     const payment = await initializePaystackPayment({
       email: body.email,
       amountKobo: Math.round(Number(total) * 100),

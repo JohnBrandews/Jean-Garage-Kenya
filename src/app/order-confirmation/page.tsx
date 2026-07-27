@@ -5,6 +5,7 @@ import { CheckCircle } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { OrderTrackingTimeline } from "@/components/orders/order-tracking-timeline";
 import { ClearCartWhenOrderPaid } from "@/components/orders/clear-cart-when-order-paid";
+import { verifyAndFinalizePaidOrder } from "@/lib/order-payments";
 
 interface OrderConfirmationProps {
   searchParams: Promise<{ order?: string }>;
@@ -13,12 +14,26 @@ interface OrderConfirmationProps {
 export default async function OrderConfirmationPage({ searchParams }: OrderConfirmationProps) {
   const { order: orderNumber } = await searchParams;
 
-  const order = orderNumber
-        ? await prisma.order.findUnique({
+  let order = orderNumber
+    ? await prisma.order.findUnique({
         where: { orderNumber },
         include: { items: { include: { product: true } } },
       })
     : null;
+
+  if (order && order.paymentStatus !== "paid") {
+    try {
+      const finalizedOrder = await verifyAndFinalizePaidOrder(order.orderNumber);
+      if (finalizedOrder) {
+        order = await prisma.order.findUnique({
+          where: { orderNumber: finalizedOrder.orderNumber },
+          include: { items: { include: { product: true } } },
+        });
+      }
+    } catch (error) {
+      console.error("Order confirmation verification failed:", error);
+    }
+  }
 
   const paymentComplete = order?.paymentStatus === "paid";
 

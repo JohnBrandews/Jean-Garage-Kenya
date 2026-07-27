@@ -12,6 +12,17 @@ type PaystackInitializeResponse = {
   };
 };
 
+type PaystackVerifyResponse = {
+  status: boolean;
+  message: string;
+  data?: {
+    status?: string;
+    reference?: string;
+    id?: string | number;
+    amount?: number;
+  };
+};
+
 export async function initializePaystackPayment(input: {
   email: string;
   amountKobo: number;
@@ -50,4 +61,28 @@ export async function initializePaystackPayment(input: {
   }
 
   return data.data;
+}
+
+export async function verifyPaystackTransaction(reference: string) {
+  const secretKey = process.env.PAYSTACK_SECRET_KEY;
+
+  if (!secretKey) {
+    throw new Error("PAYSTACK_SECRET_KEY is not configured");
+  }
+
+  const response = await fetch(`${PAYSTACK_API_BASE}/transaction/verify/${encodeURIComponent(reference)}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${secretKey}`,
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = (await response.json()) as PaystackVerifyResponse;
+
+  if (!response.ok || !data.status) {
+    throw new Error(data.message || "Failed to verify Paystack payment");
+  }
+
+  return data.data ?? null;
 }

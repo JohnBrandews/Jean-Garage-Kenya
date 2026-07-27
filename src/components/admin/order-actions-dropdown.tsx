@@ -17,7 +17,7 @@ export function OrderActionsDropdown({ orderId, currentStatus }: { orderId: stri
     const payload =
       action === "CANCELLED"
         ? { status: "CANCELLED", paymentStatus: "cancelled" }
-        : { status: action, paymentStatus: action === "DELIVERED" ? "received" : "received" };
+        : { status: action };
 
     await fetch(`/api/admin/orders/${orderId}`, {
       method: "PATCH",

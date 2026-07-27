@@ -19,6 +19,13 @@ type StatusBucket = {
   _sum: { total: string | number | null };
 };
 
+const revenueWhere = {
+  OR: [
+    { paymentStatus: "paid" },
+    { status: { in: ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"] } },
+  ],
+};
+
 async function getDashboardStats() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -38,7 +45,7 @@ async function getDashboardStats() {
     recentRevenue,
   ] = await Promise.all([
     prisma.order.aggregate({
-      where: { status: { in: ["PAID", "PROCESSING", "SHIPPED", "DELIVERED"] } },
+      where: revenueWhere,
       _sum: { total: true },
     }),
     prisma.order.count({ where: { createdAt: { gte: today } } }),
@@ -58,12 +65,13 @@ async function getDashboardStats() {
       include: { user: { select: { name: true, email: true } } },
     }),
     prisma.order.groupBy({
+      where: revenueWhere,
       by: ["status"],
       _count: { _all: true },
       _sum: { total: true },
     }),
     prisma.order.findMany({
-      where: { createdAt: { gte: sevenDaysAgo } },
+      where: { createdAt: { gte: sevenDaysAgo }, ...revenueWhere },
       select: { createdAt: true, total: true },
       orderBy: { createdAt: "asc" },
     }),

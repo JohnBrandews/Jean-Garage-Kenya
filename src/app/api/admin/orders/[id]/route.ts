@@ -21,7 +21,9 @@ export async function PATCH(
       where: { id },
       data: {
         ...(body.status ? { status: body.status } : {}),
-        ...(body.paymentStatus ? { paymentStatus: body.paymentStatus } : {}),
+        ...(body.paymentStatus === "paid" || body.paymentStatus === "cancelled"
+          ? { paymentStatus: body.paymentStatus }
+          : {}),
         ...(body.trackingNumber ? { trackingNumber: body.trackingNumber } : {}),
       },
     });
