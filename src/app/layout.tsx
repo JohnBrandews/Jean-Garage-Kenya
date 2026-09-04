@@ -3,8 +3,10 @@ import "./globals.css";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { CartProvider } from "@/components/providers/cart-provider";
 import { SiteShell } from "@/components/layout/site-shell";
+import { siteUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "JEANS GARAGE | Premium Fashion Since 2015",
     template: "%s | JEANS GARAGE",
@@ -12,6 +14,11 @@ export const metadata: Metadata = {
   description:
     "Luxury streetwear and premium fashion. Shop jeans, clothing, footwear, and accessories. Delivering across Kenya, East Africa, and worldwide.",
   keywords: ["JEANS GARAGE", "jeans", "fashion", "Kenya", "streetwear", "luxury", "clothing"],
+  icons: {
+    icon: "/jean.png",
+    shortcut: "/jean.png",
+    apple: "/jean.png",
+  },
 };
 
 export default function RootLayout({
